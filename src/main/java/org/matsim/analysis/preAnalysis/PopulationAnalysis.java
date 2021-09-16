@@ -14,7 +14,6 @@ import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.gis.ShapeFileReader;
 import org.opengis.feature.simple.SimpleFeature;
 import picocli.CommandLine;
-
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
