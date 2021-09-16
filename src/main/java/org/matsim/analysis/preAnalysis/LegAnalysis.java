@@ -24,7 +24,7 @@ import java.util.Map;
 public class LegAnalysis {
 
     public static void main(String[] args) throws IOException {
-        String populationFile = "/Users/luchengqi/Documents/MATSimScenarios/Kelheim/population-analysis/kelheim-v1.0-25pct.plans.xml";
+        String populationFile = "/Users/luchengqi/Documents/MATSimScenarios/Kelheim/population-analysis/population.xml.gz";
         String personsLivingInKelheimFile = "/Users/luchengqi/Documents/MATSimScenarios/Kelheim/population-analysis/persons-living-in-Kelheim.csv";
         List<String> personsLivingInKelheim = new ArrayList<>();
         Map<String, MutableInt> tripRecordMap = new HashMap<>();
