@@ -18,7 +18,9 @@ public class PtFareAnalysis {
         String ptFareFile = "/Users/luchengqi/Desktop/pt-trips-fare.csv";
         CoordinateTransformation transformation = TransformationFactory.getCoordinateTransformation(TransformationFactory.WGS84, "EPSG:25832");
 
-        SimpleRegression regression = new SimpleRegression();
+        SimpleRegression regressionShortTrips = new SimpleRegression();
+        SimpleRegression regressionLongTrips = new SimpleRegression();
+        SimpleRegression regressionAllTrips = new SimpleRegression();
 
         try (CSVParser parser = new CSVParser(Files.newBufferedReader(Path.of(ptFareFile)),
                 CSVFormat.DEFAULT.withDelimiter(',').withFirstRecordAsHeader())) {
@@ -28,27 +30,37 @@ public class PtFareAnalysis {
                 Coord from = new Coord(Double.parseDouble(record.get(1)), Double.parseDouble(record.get(2)));
                 Coord to = new Coord(Double.parseDouble(record.get(3)), Double.parseDouble(record.get(4)));
                 double distance = CoordUtils.calcEuclideanDistance(transformation.transform(from), transformation.transform(to));
+
+                // Add to the linear regression model
+                regressionAllTrips.addData(distance, fare);
                 if (tripType.equals("short")) {
-                    distance -= 1;
-                    fare -= 2;
-                    if (distance<0){
-                        distance = 0;
-                        fare = 0;
-                    }
-                    regression.addData(distance, fare);
+                    regressionShortTrips.addData(distance, fare);
+                } else {
+                    regressionLongTrips.addData(distance, fare);
                 }
             }
-
         }
 
-        double slope = regression.getSlope();
-        double intercept = regression.getIntercept();
+        double slopeShort = regressionShortTrips.getSlope();
+        double interceptShort = regressionShortTrips.getIntercept();
 
-        System.out.println("Slope is " + slope);
-        System.out.println("Intercept is " + intercept);
-        System.out.println("Standard error is " + regression.getSlopeStdErr());
+        double slopeLong = regressionLongTrips.getSlope();
+        double interceptLong = regressionLongTrips.getIntercept();
 
+        double slopeAll = regressionAllTrips.getSlope();
+        double interceptAll = regressionAllTrips.getIntercept();
 
+        System.out.println("Slope for short trips is " + slopeShort);
+        System.out.println("Intercept for short trips is " + interceptShort);
+        System.out.println("Standard error for short trips is" + regressionShortTrips.getSlopeStdErr());
+        System.out.println("\n");
+        System.out.println("Slope for long trips is " + slopeLong);
+        System.out.println("Intercept for long trips is " + interceptLong);
+        System.out.println("Standard error for long trips is" + regressionLongTrips.getSlopeStdErr());
+        System.out.println("\n");
+        System.out.println("Slope for all trips is " + slopeAll);
+        System.out.println("Intercept for all trips is " + interceptAll);
+        System.out.println("Standard error for all trips is" + regressionAllTrips.getSlopeStdErr());
     }
 
 
