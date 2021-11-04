@@ -6,6 +6,7 @@ import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
 import org.matsim.analysis.KelheimMainModeIdentifier;
 import org.matsim.analysis.ModeChoiceCoverageControlerListener;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -18,6 +19,7 @@ import org.matsim.application.prepare.freight.ExtractRelevantFreightTrips;
 import org.matsim.application.prepare.network.CreateNetworkFromSumo;
 import org.matsim.application.prepare.population.*;
 import org.matsim.application.prepare.pt.CreateTransitScheduleFromGtfs;
+import org.matsim.contrib.av.maxspeed.DvrpTravelTimeWithMaxSpeedLimitModule;
 import org.matsim.contrib.drt.routing.DrtRoute;
 import org.matsim.contrib.drt.routing.DrtRouteFactory;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
@@ -41,6 +43,8 @@ import org.matsim.drtFare.KelheimDrtFareModule;
 import org.matsim.run.prepare.PrepareNetwork;
 import org.matsim.run.prepare.PreparePopulation;
 import org.matsim.run.utils.StrategyWeightFadeout;
+import org.matsim.vehicles.VehicleType;
+import org.matsim.vehicles.VehicleUtils;
 import picocli.CommandLine;
 import playground.vsp.scoring.IncomeDependentUtilityOfMoneyPersonScoringParameters;
 
@@ -186,9 +190,13 @@ public class RunKelheimScenario extends MATSimApplication {
             controler.addOverridingModule(new MultiModeDrtModule());
             controler.configureQSimComponents(DvrpQSimComponents.activateAllModes(multiModeDrtConfig));
             for (DrtConfigGroup drtCfg : multiModeDrtConfig.getModalElements()) {
+                if (drtCfg.getMode().equals("av")){
+                    VehicleType vehicleType = VehicleUtils.createVehicleType(Id.create("autonomousVehicleType", VehicleType.class ) );
+                    vehicleType.setMaximumVelocity(5); // 18km/h --> 5m/s
+                    controler.addOverridingModule(new DvrpTravelTimeWithMaxSpeedLimitModule(vehicleType));
+                }
                 controler.addOverridingModule(new KelheimDrtFareModule(drtCfg, network));
             }
-
         }
     }
 }

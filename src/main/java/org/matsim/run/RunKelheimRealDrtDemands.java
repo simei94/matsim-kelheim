@@ -2,9 +2,11 @@ package org.matsim.run;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.application.MATSimAppCommand;
+import org.matsim.contrib.av.maxspeed.DvrpTravelTimeWithMaxSpeedLimitModule;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.run.DrtControlerCreator;
 import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
@@ -20,9 +22,9 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.drtFare.KelheimDrtFareModule;
+import org.matsim.vehicles.VehicleType;
+import org.matsim.vehicles.VehicleUtils;
 import picocli.CommandLine;
-
-import java.nio.file.Path;
 
 
 @CommandLine.Command(
@@ -56,8 +58,8 @@ public class RunKelheimRealDrtDemands implements MATSimAppCommand {
             config.plans().setInputFile("./real-drt-demands/" + date + "-drt.plans.xml");
             log.info("Setting input plans file to: " + config.plans().getInputFile());
 
-            String outputDirectory = Path.of(config.controler().getOutputDirectory()).getParent().toString() + "/" + date;
-            config.controler().setOutputDirectory(outputDirectory);
+//            String outputDirectory = Path.of(config.controler().getOutputDirectory()).getParent().toString() + "/" + date;
+//            config.controler().setOutputDirectory(outputDirectory);
             log.info("Setting output directory to: " + config.controler().getOutputDirectory());
 
             config.vspExperimental().setVspDefaultsCheckingLevel(VspExperimentalConfigGroup.VspDefaultsCheckingLevel.info);
@@ -80,6 +82,11 @@ public class RunKelheimRealDrtDemands implements MATSimAppCommand {
             controler.configureQSimComponents(DvrpQSimComponents.activateAllModes(MultiModeDrtConfigGroup.get(config)));
             MultiModeDrtConfigGroup multiModeDrtConfig = ConfigUtils.addOrGetModule(config, MultiModeDrtConfigGroup.class);
             for (DrtConfigGroup drtCfg : multiModeDrtConfig.getModalElements()) {
+                if (drtCfg.getMode().equals("av")){
+                    VehicleType vehicleType = VehicleUtils.createVehicleType(Id.create("autonomousVehicleType", VehicleType.class ) );
+                    vehicleType.setMaximumVelocity(5); // 18km/h --> 5m/s
+                    controler.addOverridingModule(new DvrpTravelTimeWithMaxSpeedLimitModule(vehicleType));
+                }
                 controler.addOverridingModule(new KelheimDrtFareModule(drtCfg, network));
             }
             controler.run();
