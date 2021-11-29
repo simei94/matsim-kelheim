@@ -1,4 +1,4 @@
-# The MATSim Open Kelheim Scenario
+# The MATSim Open Kelheim Scenario for Matsim Advanced course (as an example)
 
 [![Build Status](https://github.com/matsim-scenarios/matsim-kelheim/actions/workflows/build.yaml/badge.svg)](https://github.com/matsim-scenarios/matsim-kelheim/actions/workflows/build.yaml)
 ![license](https://img.shields.io/github/license/matsim-scenarios/matsim-kehlheim.svg)
